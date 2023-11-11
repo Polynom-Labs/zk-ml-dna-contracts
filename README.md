@@ -1,4 +1,4 @@
-# zkdna.aleo
+# zk_ml_dna_v0.aleo
 
 ## Build Guide
 

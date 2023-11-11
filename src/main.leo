@@ -30,8 +30,6 @@ program zk_ml_dna_v0.aleo {
 
     transition submit(answers: PatientAnswers, model_input: BiometricInput) -> (AnswersWithModelOutput, RewardToken) {
         let model_input_hash: field = BHP256::hash_to_field(model_input);
-        // check that it is new data, later add signature check to protect againts fraudelent inputs
-        assert (!Mapping::contains(submitted_biometric_inputs, model_input_hash));
 
         // hardcode reward amount and researcher address for now
         let reward_amount: u128 = 1000u128;
@@ -60,14 +58,17 @@ program zk_ml_dna_v0.aleo {
             owner: self.caller, // reward token goes to caller
             amount: reward_amount
 
-        }) then finalize(researcher_address, reward_amount);
+        }) then finalize(model_input_hash, reward_amount);
     }
 
     finalize submit(model_input_hash: field, reward_amount: u128) {
+        // check that it is new data, later add signature check to protect againts fraudelent inputs
+        assert (!Mapping::contains(submitted_biometric_inputs, model_input_hash));
+
         // update total distributed rewards per research
         let research_id: u64 = 1u64;
-        let distributed_rewards: u128 = Mapping::get_or_use(distributed_rewards, research_id, 0u128);
-        Mapping::set(distributed_rewards, research_id, distributed_rewards + reward_amount);
+        let current_amount: u128 = Mapping::get_or_use(distributed_rewards, research_id, 0u128);
+        Mapping::set(distributed_rewards, research_id, current_amount + reward_amount);
 
         // publicly store hash of submitted biometric input
         Mapping::set(submitted_biometric_inputs, model_input_hash, true);
@@ -85,7 +86,7 @@ program zk_ml_dna_v0.aleo {
                         return 48i8;
                     }
                     else {
-                        return 128i8;
+                        return 127i8;
                     }
                 }
             }
@@ -95,7 +96,7 @@ program zk_ml_dna_v0.aleo {
                         return 64i8;
                     }
                     else {
-                        return 144i8;
+                        return 14i8;
                     }
                 }
                 else {
@@ -124,7 +125,7 @@ program zk_ml_dna_v0.aleo {
             }
         }
         else {
-            return 160i8;
+            return 10i8;
         }
     }
 
